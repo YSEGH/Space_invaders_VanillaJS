@@ -5,13 +5,14 @@ import Score from "./Score";
 import { Ship } from "./Ship";
 import "./style/index.css";
 
+let gameOver = false;
 const livesBoard = new Lives({
   x: window.innerWidth / 2 - 150,
   y: window.innerHeight - 25,
 });
 let scoreBoard = new Score({ x: window.innerWidth / 2 - 150, y: 0 });
 
-const bullets = [];
+let bullets = [];
 const ALIEN_ROWS = 5; // Nombre de lignes d'aliens
 const ALIEN_COLS = 9; // Nombre de colonnes d'aliens
 const alienWidth = 60; // La largeur d'un alien
@@ -26,6 +27,9 @@ const key = {
 
 document.addEventListener("keydown", ({ code }) => {
   key[code] = true;
+  /*   if (code === "KeyV") {
+    resetGame();
+  } */
 });
 
 document.addEventListener("keyup", ({ code }) => {
@@ -71,13 +75,12 @@ const ship = new Ship({
   removeLife: () => livesBoard.removeALife(),
 });
 
-const aliens = [];
-const aliensGrid = [];
+let aliens = [];
+let aliensGrid = [];
 
 const removeAlien = (alien) => {
   aliens.splice(aliens.indexOf(alien), 1);
   alien.remove();
-  console.log(aliensGrid);
   for (let row = 0; row < aliensGrid.length; row++) {
     for (let col = 0; col < aliensGrid.length; col++) {
       if (aliensGrid[row][col] === alien) {
@@ -87,23 +90,43 @@ const removeAlien = (alien) => {
   }
 };
 
-for (let row = 0; row < ALIEN_ROWS; row++) {
-  const aliensCol = [];
-  for (let col = 0; col < ALIEN_COLS; col++) {
-    const alien = new Alien({
-      x: col * colWidth + (window.innerWidth / 2 - (ALIEN_COLS * colWidth) / 2),
-      y: row * rowHeight + 50,
-      getOverlappingBullet,
-      removeAlien,
-      removeBullet,
-      addToScore,
-    });
-    aliens.push(alien);
-    aliensCol.push(alien);
+const removeAllAliens = () => {
+  for (let i = 0; i < aliens.length; i++) {
+    const alien = aliens[i];
+    alien.remove();
   }
-  aliensGrid.push(aliensCol);
-}
-console.log("first :", aliensGrid);
+  aliens = [];
+  aliensGrid = [];
+};
+
+const removeAllBullets = () => {
+  for (let i = 0; i < bullets.length; i++) {
+    const bullet = bullets[i];
+    bullet.remove();
+  }
+  bullets = [];
+};
+
+const createAliens = () => {
+  for (let row = 0; row < ALIEN_ROWS; row++) {
+    const aliensCol = [];
+    for (let col = 0; col < ALIEN_COLS; col++) {
+      const alien = new Alien({
+        x:
+          col * colWidth +
+          (window.innerWidth / 2 - (ALIEN_COLS * colWidth) / 2),
+        y: row * rowHeight + 50,
+        getOverlappingBullet,
+        removeAlien,
+        removeBullet,
+        addToScore,
+      });
+      aliens.push(alien);
+      aliensCol.push(alien);
+    }
+    aliensGrid.push(aliensCol);
+  }
+};
 
 const getLeftMostAlien = () => {
   return aliens.reduce((minimumAlien, currentAlien) => {
@@ -122,7 +145,6 @@ const getAllBottomMostAliens = () => {
   for (let col = 0; col < ALIEN_COLS; col++) {
     for (let row = ALIEN_ROWS - 1; row >= 0; row--) {
       if (aliensGrid[row][col]) {
-        console.log(aliensGrid[row][col]);
         bottomAliens.push(aliensGrid[row][col]);
         break;
       }
@@ -131,57 +153,80 @@ const getAllBottomMostAliens = () => {
   return bottomAliens;
 };
 
+const resetGame = () => {
+  removeAllAliens();
+
+  removeAllBullets();
+  createAliens();
+
+  livesBoard.lives = 3;
+  livesBoard.displayLives();
+  scoreBoard.resetScore();
+  ship.spawn();
+  gameOver = false;
+};
+
 const update = () => {
-  if (key["ArrowRight"] && ship.x < window.innerWidth - ship.SPRITE_WIDTH) {
-    ship.moveRight();
-  } else if (key["ArrowLeft"] && ship.x > 0) {
-    ship.moveLeft();
-  }
-  if (key["Space"]) {
-    ship.fire({ createBullet });
-  }
-
-  ship.update();
-
-  bullets.map((bullet, i) => {
-    bullet.update();
-    if (bullet.y < 0) {
-      bullets.splice(i, 1);
-      bullet.remove();
+  if (!gameOver) {
+    if (key["ArrowRight"] && ship.x < window.innerWidth - ship.SPRITE_WIDTH) {
+      ship.moveRight();
+    } else if (key["ArrowLeft"] && ship.x > 0) {
+      ship.moveLeft();
     }
-  });
+    if (key["Space"]) {
+      ship.fire({ createBullet });
+    }
 
-  aliens.map((alien, i) => {
-    alien.update();
-  });
+    ship.update();
 
-  const leftMostAlien = getLeftMostAlien();
-  if (leftMostAlien.x <= 0) {
-    aliens.map((alien) => {
-      alien.setDirectionRight();
+    bullets.map((bullet, i) => {
+      bullet.update();
+      if (bullet.y < 0) {
+        bullets.splice(i, 1);
+        bullet.remove();
+      }
     });
-  }
-  const rightMostAlien = getRightMostAlien();
-  if (rightMostAlien.x > window.innerWidth - alienWidth) {
-    aliens.map((alien) => {
-      alien.setDirectionLeft();
-      alien.moveDown();
+
+    aliens.map((alien, i) => {
+      alien.update();
     });
+
+    const leftMostAlien = getLeftMostAlien();
+    if (leftMostAlien.x <= 0) {
+      aliens.map((alien) => {
+        alien.setDirectionRight();
+      });
+    }
+    const rightMostAlien = getRightMostAlien();
+    if (rightMostAlien.x > window.innerWidth - alienWidth) {
+      aliens.map((alien) => {
+        alien.setDirectionLeft();
+        alien.moveDown();
+      });
+    }
+
+    if (livesBoard.lives === 0) {
+      console.log("GameOver");
+      gameOver = true;
+      resetGame();
+    }
   }
 };
 
 const fireAlien = () => {
-  // Faire tirer aléatoirement un alien de la dernière rangée
-  const bottomMostAliens = getAllBottomMostAliens();
-  console.log(aliensGrid);
-  const random = Math.floor(Math.random() * bottomMostAliens.length);
-  if (bottomMostAliens[random].el) {
-    bottomMostAliens[random].fire({
-      createBullet,
-    });
+  if (!gameOver) {
+    // Faire tirer aléatoirement un alien de la dernière rangée
+    const bottomMostAliens = getAllBottomMostAliens();
+    const random = Math.floor(Math.random() * bottomMostAliens.length);
+    if (bottomMostAliens[random].el) {
+      bottomMostAliens[random].fire({
+        createBullet,
+      });
+    }
   }
 };
 
-setInterval(update, 20);
+createAliens();
 
+setInterval(update, 20);
 setInterval(fireAlien, 2000);

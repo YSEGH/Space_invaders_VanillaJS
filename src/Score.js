@@ -16,6 +16,11 @@ class Score extends Entity {
     this.score += points;
     this.scoreH1.innerText = `Score : ${this.score}`;
   }
+
+  resetScore() {
+    this.score = 0;
+    this.setScore(this.score);
+  }
 }
 
 export default Score;

@@ -15,6 +15,7 @@ class Lives extends Entity {
   removeALife() {
     this.lives--;
     this.displayLives();
+    return this.lives;
   }
 
   displayLives() {
