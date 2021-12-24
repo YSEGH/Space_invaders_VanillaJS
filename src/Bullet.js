@@ -2,8 +2,9 @@ import { Entity } from "./Entity";
 import "./style/Bullet.css";
 
 class Bullet extends Entity {
-  constructor({ x, y }) {
+  constructor({ x, y, isAlien }) {
     super({ className: "bullet" });
+    this.isAlien = isAlien;
     this.speed = 5;
     this.BULLET_WIDTH = 6;
     this.setX(x);
@@ -11,7 +12,8 @@ class Bullet extends Entity {
   }
 
   update() {
-    this.setY(this.y - this.speed);
+    const dirY = this.isAlien ? this.speed : -this.speed;
+    this.setY(this.y + dirY);
   }
 }
 

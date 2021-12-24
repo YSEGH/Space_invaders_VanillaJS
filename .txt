@@ -1,0 +1,5 @@
+A faire :
+
+- Il faut récupérer les aliens de la dernière rangée.
+- Sélectionner de manière aléatoire un alien.
+- Le faire tirer.

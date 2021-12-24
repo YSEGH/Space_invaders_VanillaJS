@@ -23,7 +23,7 @@ class Alien extends Entity {
     this.addToScore = addToScore;
 
     this.SPEED = 2;
-    this.DOWN_SPEED = 30;
+    this.DOWN_SPEED = 10;
     this.direction = LEFT;
     this.setX(x);
     this.setY(y);
@@ -49,11 +49,19 @@ class Alien extends Entity {
     }
 
     const bullet = this.getOverlappingBullet(this);
-    if (bullet) {
+    if (bullet && !bullet.isAlien) {
       this.removeAlien(this);
       this.removeBullet(bullet);
       this.addToScore(20);
     }
+  }
+
+  fire({ createBullet }) {
+    createBullet({
+      x: this.x + 60 / 2,
+      y: this.y + 60,
+      isAlien: true,
+    });
   }
 }
 

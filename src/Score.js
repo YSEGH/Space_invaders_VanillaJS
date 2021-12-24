@@ -7,7 +7,7 @@ class Score extends Entity {
     this.scoreH1 = document.createElement("h1");
     this.el.appendChild(this.scoreH1);
     this.score = 0;
-    this.setScore(0);
+    this.setScore(this.score);
     this.setX(x);
     this.setY(y);
   }
