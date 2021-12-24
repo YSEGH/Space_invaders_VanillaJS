@@ -76,6 +76,7 @@ const aliensGrid = [];
 
 const removeAlien = (alien) => {
   aliens.splice(aliens.indexOf(alien), 1);
+  alien.remove();
   console.log(aliensGrid);
   for (let row = 0; row < aliensGrid.length; row++) {
     for (let col = 0; col < aliensGrid.length; col++) {
@@ -84,7 +85,6 @@ const removeAlien = (alien) => {
       }
     }
   }
-  alien.remove();
 };
 
 for (let row = 0; row < ALIEN_ROWS; row++) {
@@ -103,6 +103,7 @@ for (let row = 0; row < ALIEN_ROWS; row++) {
   }
   aliensGrid.push(aliensCol);
 }
+console.log("first :", aliensGrid);
 
 const getLeftMostAlien = () => {
   return aliens.reduce((minimumAlien, currentAlien) => {
@@ -121,6 +122,7 @@ const getAllBottomMostAliens = () => {
   for (let col = 0; col < ALIEN_COLS; col++) {
     for (let row = ALIEN_ROWS - 1; row >= 0; row--) {
       if (aliensGrid[row][col]) {
+        console.log(aliensGrid[row][col]);
         bottomAliens.push(aliensGrid[row][col]);
         break;
       }
@@ -171,9 +173,9 @@ const update = () => {
 const fireAlien = () => {
   // Faire tirer aléatoirement un alien de la dernière rangée
   const bottomMostAliens = getAllBottomMostAliens();
-  console.log(bottomMostAliens);
+  console.log(aliensGrid);
   const random = Math.floor(Math.random() * bottomMostAliens.length);
-  if (bottomMostAliens[random]) {
+  if (bottomMostAliens[random].el) {
     bottomMostAliens[random].fire({
       createBullet,
     });
@@ -182,4 +184,4 @@ const fireAlien = () => {
 
 setInterval(update, 20);
 
-setInterval(fireAlien, 1000);
+setInterval(fireAlien, 2000);
